@@ -2,7 +2,6 @@
 
 # Packages ----------------------------------------------------------------
 library(shiny)
-library(readr)
 library(dplyr)
 library(ggplot2)
 
@@ -20,13 +19,13 @@ ui <- fluidPage(
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-        dateRangeInput("dates", label = "Date range"),
-        checkboxInput("checkbox", label = "Include public funding?", value = FALSE)
+        dateRangeInput("date_range", label = "Date range"),
+        checkboxInput("public_funding", label = "Include public funding?", value = FALSE)
       ),
       
       # Show a plot of the generated distribution
       mainPanel(
-         plotOutput("distPlot")
+         plotOutput("main_plot")
       )
    )
 )
@@ -36,16 +35,21 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
    
-   output$distPlot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-      x    <- faithful[, 2] 
-      bins <- seq(min(x), max(x), length.out = input$bins + 1)
+   output$main_plot <- renderPlot({
+      # filter data
+      data <- donations %>% 
+        group_by(level_1_short) %>% 
+        summarise(value = sum(dntn_value))
       
-      # draw the histogram with the specified number of bins
-      hist(x, breaks = bins, col = 'darkgray', border = 'white')
+      # create graph
+      ggplot(data, aes(level_1_short, value)) +
+        geom_bar(stat = 'identity') +
+        coord_flip() +
+        labs(title = 'Donations by interest group of donor',
+             x = 'Interest Group',
+             y = 'Total value of donations')
    })
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
