@@ -1,0 +1,13 @@
+# Ignore everything except R files and gitignore
+# See https://stackoverflow.com/questions/9162919/whitelisting-and-subdirectories-in-git/9227991#9227991
+# Ignore everything
+*
+# Except .gitignore
+!.gitignore
+# Except any directory
+!*/
+# Except R files
+!*.R
+!*.Rmd
+.Rproj.user
+.httr-oauth
