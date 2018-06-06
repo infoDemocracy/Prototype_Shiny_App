@@ -20,7 +20,8 @@ ui <- fluidPage(
    sidebarLayout(
       sidebarPanel(
         dateRangeInput("date_range", label = "Date range"),
-        checkboxInput("public_funding", label = "Include public funding?", value = FALSE)
+        checkboxInput("public_funding", label = "Include public funding?", value = FALSE),
+        checkboxInput("not_yet_coded", label = "Include not yet coded?", value = FALSE)
       ),
       
       # Show a plot of the generated distribution
