@@ -39,6 +39,8 @@ server <- function(input, output) {
    output$main_plot <- renderPlot({
       # filter data
       data <- donations %>% 
+        filter(x_donation_date >= input$date_range[1],
+               x_donation_date <= input$date_range[2]) %>% 
         group_by(level_1_short) %>% 
         summarise(value = sum(dntn_value))
       
