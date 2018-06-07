@@ -19,7 +19,10 @@ ui <- fluidPage(
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-        dateRangeInput("date_range", label = "Date range"),
+        dateRangeInput("date_range",
+                       label = "Date range",
+                       start = min(donations$x_donation_date, na.rm = T),
+                       end = Sys.Date()),
         checkboxInput("public_funding", label = "Include public funding?", value = FALSE),
         checkboxInput("not_yet_coded", label = "Include not yet coded?", value = FALSE)
       ),
