@@ -48,7 +48,7 @@ server <- function(input, output) {
         summarise(value = sum(dntn_value))
       
       # create graph
-      ggplot(data, aes(level_1_short, value)) +
+      ggplot(data, aes(reorder(level_1_short, value), value)) +
         geom_bar(stat = 'identity') +
         coord_flip() +
         labs(title = 'Donations by interest group of donor',
