@@ -9,13 +9,11 @@ library(ggplot2)
 load('info_democracy.Rdata')
 
 # UI ----------------------------------------------------------------------
-
-# Define UI for application that draws a histogram
 ui <- fluidPage(
    
    # Application title
    titlePanel("infoDemocracy"),
-   h1('Test'),
+   h1('All donations within specified period'),
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
@@ -27,7 +25,6 @@ ui <- fluidPage(
         checkboxInput("not_yet_coded", label = "Include not yet coded?", value = FALSE)
       ),
       
-      # Show a plot of the generated distribution
       mainPanel(
          plotOutput("main_plot")
       )
@@ -35,27 +32,36 @@ ui <- fluidPage(
 )
 
 # Server ------------------------------------------------------------------
-
-# Define server logic required to draw a histogram
 server <- function(input, output) {
    
+  plot_data <- reactive({
+    donations %>% 
+      filter(x_donation_date >= input$date_range[1],
+             x_donation_date <= input$date_range[2])
+  })
+  
+  plot_data_public <- reactive({
+    if(input$public_funding) return(plot_data())
+      filter(plot_data(), level_1 != 'P1')
+  })
+  
+  plot_data_not_yet_coded <- reactive({
+    if(input$not_yet_coded) return(plot_data_public())
+    filter(plot_data_public(), level_1 != 'Z')
+  })
+  
    output$main_plot <- renderPlot({
-      # filter data
-      data <- donations %>% 
-        filter(x_donation_date >= input$date_range[1],
-               x_donation_date <= input$date_range[2]) %>% 
-        group_by(level_1_short) %>% 
-        summarise(value = sum(dntn_value))
-      
-      # create graph
-      ggplot(data, aes(reorder(level_1_short, value), value)) +
-        geom_bar(stat = 'identity') +
-        coord_flip() +
-        labs(title = 'Donations by interest group of donor',
+     plot_data_not_yet_coded() %>%
+       group_by(level_1_short) %>% 
+       summarise(value = sum(dntn_value)) %>% 
+       ggplot(aes(reorder(level_1_short, value), value)) +
+       geom_bar(stat = 'identity', fill = 'navyblue') +
+       coord_flip() +
+       labs(title = 'Donations by interest group of donor',
              x = 'Interest Group',
              y = 'Total value of donations')
    })
 }
 
-# Run the application 
+# Run application ---------------------------------------------------------
 shinyApp(ui = ui, server = server)
