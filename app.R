@@ -26,7 +26,10 @@ ui <- fluidPage(
       ),
       
       mainPanel(
-         plotOutput("main_plot")
+        tabsetPanel(
+          tabPanel("Plot", plotOutput("main_plot")),
+          tabPanel("Donors")
+        )
       )
    )
 )
@@ -59,7 +62,7 @@ server <- function(input, output) {
        coord_flip() +
        labs(title = 'Donations by interest group of donor',
              x = 'Interest Group',
-             y = 'Total value of donations')
+             y = 'Total value of donations (£)')
    })
 }
 
