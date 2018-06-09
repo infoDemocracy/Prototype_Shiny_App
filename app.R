@@ -71,7 +71,7 @@ server <- function(input, output) {
        group_by(Donor = x_donor_name,
                 `Interest Group` = level_1_short) %>% 
        summarise(donations = n(),
-                 value = sum(dntn_value)) %>% 
+                 value = round(sum(dntn_value))) %>% 
        arrange(desc(value))
    })
 }
