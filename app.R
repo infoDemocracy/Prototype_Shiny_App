@@ -70,8 +70,8 @@ server <- function(input, output) {
      plot_data_not_yet_coded() %>% 
        group_by(Donor = x_donor_name,
                 `Interest Group` = level_1_short) %>% 
-       summarise(donations = n(),
-                 value = round(sum(dntn_value))) %>% 
+       summarise(Donations = n(),
+                 Value = round(sum(dntn_value))) %>% 
        arrange(desc(value))
    })
 }
