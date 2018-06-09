@@ -69,11 +69,16 @@ server <- function(input, output) {
    output$donor_table <- DT::renderDataTable({
      plot_data_not_yet_coded() %>% 
        group_by(Donor = x_donor_name,
-                `Interest Group` = level_1_short) %>% 
+                `Interest Group` = level_1_short,
+                Wikipedia = wikipedia,
+                Powerbase = powerbase) %>% 
        summarise(Donations = n(),
                  Value = round(sum(dntn_value))) %>% 
-       arrange(desc(Value))
-   })
+       ungroup() %>% 
+       arrange(desc(Value)) %>% 
+       mutate(Wikipedia = ifelse(!is.na(Wikipedia), paste0('<a href="', Wikipedia, '" target="_blank">Here</a>'), NA),
+              Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA))
+   }, escape = FALSE)
 }
 
 # Run application ---------------------------------------------------------
