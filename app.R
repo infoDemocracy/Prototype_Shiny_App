@@ -72,7 +72,7 @@ server <- function(input, output) {
                 `Interest Group` = level_1_short) %>% 
        summarise(Donations = n(),
                  Value = round(sum(dntn_value))) %>% 
-       arrange(desc(value))
+       arrange(desc(Value))
    })
 }
 
