@@ -4,6 +4,7 @@
 library(shiny)
 library(dplyr)
 library(ggplot2)
+library(DT)
 
 # Data --------------------------------------------------------------------
 load('info_democracy.Rdata')
@@ -28,7 +29,7 @@ ui <- fluidPage(
       mainPanel(
         tabsetPanel(
           tabPanel("Plot", plotOutput("main_plot")),
-          tabPanel("Donors")
+          tabPanel("Donors", DT::dataTableOutput("donor_table"))
         )
       )
    )
@@ -63,6 +64,15 @@ server <- function(input, output) {
        labs(title = 'Donations by interest group of donor',
              x = 'Interest Group',
              y = 'Total value of donations (£)')
+   })
+   
+   output$donor_table <- DT::renderDataTable({
+     plot_data_not_yet_coded() %>% 
+       group_by(Donor = x_donor_name,
+                `Interest Group` = level_1_short) %>% 
+       summarise(donations = n(),
+                 value = sum(dntn_value)) %>% 
+       arrange(desc(value))
    })
 }
 
