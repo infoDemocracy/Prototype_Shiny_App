@@ -17,7 +17,7 @@ ui <- fluidPage(
    h1('All donations within specified period'),
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
-      sidebarPanel(
+      sidebarPanel(width = 3, 
         dateRangeInput("date_range",
                        label = "Date range",
                        start = min(donations$x_donation_date, na.rm = T),
@@ -26,7 +26,7 @@ ui <- fluidPage(
         checkboxInput("not_yet_coded", label = "Include not yet coded?", value = FALSE)
       ),
       
-      mainPanel(
+      mainPanel(width = 9,
         tabsetPanel(
           tabPanel("Plot", plotOutput("main_plot")),
           tabPanel("Donors", DT::dataTableOutput("donor_table"))
