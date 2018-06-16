@@ -28,7 +28,9 @@ ui <- fluidPage(
       
       mainPanel(width = 9,
         tabsetPanel(
-          tabPanel("Plot", plotOutput("main_plot")),
+          tabPanel("Plot", 
+                  plotOutput("main_plot"),
+                  plotOutput("main_plot2")),
           tabPanel("Donors", DT::dataTableOutput("donor_table"))
         )
       )
@@ -64,6 +66,19 @@ server <- function(input, output) {
        labs(title = 'Donations by interest group of donor',
              x = 'Interest Group',
              y = 'Total value of donations (£)')
+   })
+   
+   output$main_plot2 <- renderPlot({
+     plot_data_not_yet_coded() %>%
+       filter(dntn_regulated_entity_type == 'Political Party') %>% 
+       group_by(dntn_regulated_entity_name) %>% 
+       summarise(value = sum(dntn_value)) %>% 
+       ggplot(aes(reorder(dntn_regulated_entity_name, value), value)) +
+       geom_bar(stat = 'identity', fill = 'navyblue') +
+       coord_flip() +
+       labs(title = 'Donations by interest party',
+            x = 'Political Party',
+            y = 'Total value of donations (£)')
    })
    
    output$donor_table <- DT::renderDataTable({
