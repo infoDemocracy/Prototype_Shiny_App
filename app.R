@@ -1,4 +1,4 @@
-# info Democracy Shiny app
+# infoDemocracy Shiny app
 
 # Packages ----------------------------------------------------------------
 library(shiny)
