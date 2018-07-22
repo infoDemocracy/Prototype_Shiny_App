@@ -101,13 +101,31 @@ ui <- dashboardPage(
                                           start = min(donations$x_donation_date, na.rm = T),
                                           end = Sys.Date()))
                        )
-              ))
+                )
+              )
     )
   )
 )
 
 # Server ------------------------------------------------------------------
 server <- function(input, output) {
+  
+  # Overview
+  
+  output$overview_time <- renderPlot({
+    donations %>% 
+      filter(!is.na(x_donation_year)) %>% 
+      group_by(x_donation_year) %>% 
+      summarise(total = sum(dntn_value)) %>% 
+      ggplot(aes(x_donation_year, total)) + 
+      geom_bar(stat = 'identity') +
+      labs(title = 'Total value of donations by year',
+           x = 'Year',
+           y = 'Total value (£)')
+  })
+  
+  # By party
+  # By sector
   
   # Data
   
@@ -128,18 +146,6 @@ server <- function(input, output) {
   })
   
   # Plots
-  
-  output$overview_time <- renderPlot({
-    donations %>% 
-      filter(!is.na(x_donation_year)) %>% 
-      group_by(x_donation_year) %>% 
-      summarise(total = sum(dntn_value)) %>% 
-      ggplot(aes(x_donation_year, total)) + 
-      geom_bar(stat = 'identity') +
-      labs(title = 'Total value of donations by year',
-           x = 'Year',
-           y = 'Total value (£)')
-  })
   
   output$main_plot <- renderPlot({
     plot_data_not_yet_coded() %>%
