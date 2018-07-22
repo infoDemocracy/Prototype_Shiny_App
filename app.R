@@ -109,7 +109,7 @@ server <- function(input, output) {
       group_by(x_donation_year) %>% 
       summarise(total = sum(dntn_value)) %>% 
       ggplot(aes(x_donation_year, total)) + 
-      geom_bar(stat = 'identity') +
+      geom_bar(stat = 'identity', fill = 'navyblue') +
       labs(title = 'Total value of donations by year',
            x = 'Year',
            y = 'Total value (£)')
