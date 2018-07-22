@@ -54,10 +54,11 @@ ui <- dashboardPage(
       
       tabItem(tabName = 'by_party',
               fluidRow(
-                column(width = 9,
+                column(width = 8,
                        box(width = 12,
-                           title = 'Test')),
-                column(width = 3,
+                           title = 'Donations by sector',
+                           plotOutput('by_party_sector'))),
+                column(width = 4,
                        box(width = 12,
                            title = 'Inputs',
                            selectInput('by_party_party',
