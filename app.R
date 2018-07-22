@@ -116,53 +116,35 @@ server <- function(input, output) {
   })
   
   # By party
-  # By sector
-  
-  # Data
-  
-  plot_data <- reactive({
+  by_party_party <- reactive({
     donations %>% 
-      filter(x_donation_date >= input$date_range[1],
-             x_donation_date <= input$date_range[2])
+      filter(dntn_regulated_entity_name == input$by_party_party)
   })
   
-  plot_data_public <- reactive({
-    if(input$public_funding) return(plot_data())
-    filter(plot_data(), level_1 != 'P1')
+  by_party_date_range <- reactive({
+    by_party_party() %>% 
+      filter(x_donation_date >= input$by_party_date_range[1],
+             x_donation_date <= input$by_party_date_range[2])
   })
   
-  plot_data_not_yet_coded <- reactive({
-    if(input$not_yet_coded) return(plot_data_public())
-    filter(plot_data_public(), level_1 != 'Z')
+  by_party_not_yet_coded <- reactive({
+    if(input$by_party_not_yet_coded) return(by_party_date_range())
+    filter(by_party_date_range(), level_1 != 'Z')
   })
   
-  # Plots
-  
-  output$main_plot <- renderPlot({
-    plot_data_not_yet_coded() %>%
+  output$by_party_sector <- renderPlot({
+    by_party_not_yet_coded() %>%
       group_by(level_1_short) %>% 
       summarise(value = sum(dntn_value)) %>% 
-      ggplot(aes(reorder(level_1_short, value), value)) +
+      ggplot(aes(level_1_short, value)) +
       geom_bar(stat = 'identity', fill = 'navyblue') +
       coord_flip() +
-      labs(x = 'Interest Group',
+      labs(x = 'Sector',
            y = 'Total value of donations (£)')
   })
   
-  output$main_plot2 <- renderPlot({
-    plot_data_not_yet_coded() %>%
-      filter(dntn_regulated_entity_type == 'Political Party') %>% 
-      group_by(dntn_regulated_entity_name) %>% 
-      summarise(value = sum(dntn_value)) %>% 
-      ggplot(aes(reorder(dntn_regulated_entity_name, value), value)) +
-      geom_bar(stat = 'identity', fill = 'navyblue') +
-      coord_flip() +
-      labs(x = 'Political Party',
-           y = 'Total value of donations (£)')
-  })
-  
-  output$donor_table <- DT::renderDataTable({
-    plot_data_not_yet_coded() %>% 
+  output$by_party_donor_table <- DT::renderDataTable({
+    by_party_not_yet_coded() %>% 
       group_by(Donor = x_donor_name,
                `Interest Group` = level_1_short,
                Wikipedia = wikipedia,
@@ -174,6 +156,12 @@ server <- function(input, output) {
       mutate(Wikipedia = ifelse(!is.na(Wikipedia), paste0('<a href="', Wikipedia, '" target="_blank">Here</a>'), NA),
              Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA))
   }, escape = FALSE)
+  
+  output$by_party_infobox <- renderInfoBox({
+    infoBox(
+      "Value selected", paste0('£', format(sum(by_party_not_yet_coded()$dntn_value), nsmall = 2, big.mark = ','))
+    )
+  })
   
 }
 
