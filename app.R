@@ -53,9 +53,40 @@ ui <- dashboardPage(
       ),
       
       tabItem(tabName = 'by_party',
-              box(title = 'Conservative and Unionist Party', plotOutput("by_party"))),
+              fluidRow(
+                column(width = 9,
+                       box(width = 12,
+                           title = 'Test')),
+                column(width = 3,
+                       box(width = 12,
+                           title = 'Inputs',
+                           selectInput('by_party_party',
+                                       label = 'Party',
+                                       choices = list(
+                                         'Conservative and Unionist Party',
+                                         'Labour Party',
+                                         'Liberal Democrats',
+                                         'UK Independence Party (UKIP)',
+                                         'Green Party',
+                                         'Scottish National Party (SNP)',
+                                         'Plaid Cymru - The Party of Wales'
+                                       )
+                           ),
+                           dateRangeInput("by_party_date_range",
+                                          label = "Date range",
+                                          start = min(donations$x_donation_date, na.rm = T),
+                                          end = Sys.Date()),
+                           checkboxInput("by_party_not_yet_coded",
+                                         label = "Include not yet coded?",
+                                         value = FALSE)
+                           )
+                       )
+                )
+              ),
       
-      tabItem(tabName = 'notes', box(title = 'Notes', p('Notes coming soon.'))),
+      tabItem(tabName = 'notes',
+              box(title = 'Notes', p('Notes coming soon.'))
+              ),
       
       tabItem(tabName = 'template',
               fluidRow(
