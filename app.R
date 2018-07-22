@@ -79,29 +79,20 @@ ui <- dashboardPage(
                            checkboxInput("by_party_not_yet_coded",
                                          label = "Include not yet coded?",
                                          value = FALSE)
-                           )
+                           ),
+                       infoBoxOutput(width = 12,
+                                     "by_party_infobox")
                        )
-                )
+                ),
+              fluidRow(
+                box(width = 12,
+                    title = 'Donors',
+                    DT::dataTableOutput("by_party_donor_table"))
+              )
               ),
       
       tabItem(tabName = 'notes',
               box(title = 'Notes', p('Notes coming soon.'))
-              ),
-      
-      tabItem(tabName = 'template',
-              fluidRow(
-                column(width = 9,
-                       box(width = 12,
-                           title = 'Test')),
-                column(width = 3,
-                       box(width = 12,
-                           title = 'Inputs',
-                           dateRangeInput("date_range",
-                                          label = "Date range",
-                                          start = min(donations$x_donation_date, na.rm = T),
-                                          end = Sys.Date()))
-                       )
-                )
               )
     )
   )
