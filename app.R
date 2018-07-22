@@ -13,7 +13,7 @@ load('info_democracy.Rdata')
 # Remove pre-poll duplicates
 donations <- donations %>% 
   filter(dntn_is_reported_pre_poll %in% c('False', 'Normal'),
-         dntn_donor_status != 'Public Fund')
+         level_1 != 'P1')
 
 # UI ----------------------------------------------------------------------
 ui <- dashboardPage(
@@ -22,8 +22,7 @@ ui <- dashboardPage(
     sidebarMenu(menuItem("Overview", tabName = "overview", icon = icon("signal")),
                 menuItem("By party", tabName = "by_party", icon = icon("th")),
                 menuItem("By sector", tabName = "by_sector", icon = icon("th")),
-                menuItem("Notes", tabName = "notes", icon = icon("th")),
-                menuItem("Template", tabName = "template", icon = icon("th")))
+                menuItem("Notes", tabName = "notes", icon = icon("th")))
   ),
   dashboardBody(
     tabItems(
