@@ -12,10 +12,10 @@ load('info_democracy.Rdata')
 
 # Remove pre-poll duplicates
 donations <- donations %>% 
-  filter(dntn_is_reported_pre_poll %in% c('False', 'Normal'))
+  filter(dntn_is_reported_pre_poll %in% c('False', 'Normal'),
+         dntn_donor_status != 'Public Fund')
 
 # UI ----------------------------------------------------------------------
-
 ui <- dashboardPage(
   dashboardHeader(title = 'infoDemocracy'),
   dashboardSidebar(
