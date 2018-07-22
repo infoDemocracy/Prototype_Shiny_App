@@ -20,7 +20,6 @@ ui <- dashboardPage(
   dashboardHeader(title = 'infoDemocracy'),
   dashboardSidebar(
     sidebarMenu(menuItem("Overview", tabName = "overview", icon = icon("signal")),
-                menuItem("Donors", tabName = "donors", icon = icon("th")),
                 menuItem("By party", tabName = "by_party", icon = icon("th")),
                 menuItem("By sector", tabName = "by_sector", icon = icon("th")),
                 menuItem("Notes", tabName = "notes", icon = icon("th")),
@@ -52,9 +51,6 @@ ui <- dashboardPage(
                               )
                        )
       ),
-      
-      tabItem(tabName = 'donors',
-              DT::dataTableOutput("donor_table")),
       
       tabItem(tabName = 'by_party',
               box(title = 'Conservative and Unionist Party', plotOutput("by_party"))),
