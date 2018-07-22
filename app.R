@@ -147,17 +147,6 @@ server <- function(input, output) {
              Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA))
   }, escape = FALSE)
   
-  output$by_party <- renderPlot({
-    plot_data_not_yet_coded() %>%
-      filter(dntn_regulated_entity_name == 'Conservative and Unionist Party') %>% 
-      group_by(level_1_short) %>% 
-      summarise(value = sum(dntn_value)) %>% 
-      ggplot(aes(reorder(level_1_short, value), value)) +
-      geom_bar(stat = 'identity', fill = 'navyblue') +
-      coord_flip() +
-      labs(x = 'Political Party',
-           y = 'Total value of donations (£)')
-  })
 }
 
 # Run application ---------------------------------------------------------
