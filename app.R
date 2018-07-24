@@ -15,6 +15,14 @@ donations <- donations %>%
   filter(dntn_is_reported_pre_poll %in% c('False', 'Normal'),
          level_1 != 'P1')
 
+parties <- c('Conservative and Unionist Party',
+             'Labour Party',
+             'Liberal Democrats',
+             'UK Independence Party (UKIP)',
+             'Green Party',
+             'Scottish National Party (SNP)',
+             'Plaid Cymru - The Party of Wales') 
+
 # UI ----------------------------------------------------------------------
 ui <- dashboardPage(
   dashboardHeader(title = 'infoDemocracy'),
@@ -62,15 +70,7 @@ ui <- dashboardPage(
                            title = 'Inputs',
                            selectInput('by_party_party',
                                        label = 'Party',
-                                       choices = list(
-                                         'Conservative and Unionist Party',
-                                         'Labour Party',
-                                         'Liberal Democrats',
-                                         'UK Independence Party (UKIP)',
-                                         'Green Party',
-                                         'Scottish National Party (SNP)',
-                                         'Plaid Cymru - The Party of Wales'
-                                       )
+                                       choices = as.list(parties)
                            ),
                            dateRangeInput("by_party_date_range",
                                           label = "Date range",
