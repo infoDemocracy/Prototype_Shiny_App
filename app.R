@@ -90,6 +90,30 @@ ui <- dashboardPage(
                     DT::dataTableOutput("by_party_donor_table"))
               )
               ),
+      tabItem(tabName = 'by_sector',
+              fluidRow(
+                column(width = 8),
+                column(width = 4,
+                       box(width = 12,
+                           title = 'Inputs',
+                           selectInput('by_sector_sector',
+                                       label = 'Sector',
+                                       choices = donations %>%
+                                         pull(level_1_short) %>%
+                                         unique() %>%
+                                         sort() %>% 
+                                         as.list()
+                           ),
+                           dateRangeInput("by_sector_date_range",
+                                          label = "Date range",
+                                          start = min(donations$x_donation_date, na.rm = T),
+                                          end = Sys.Date())
+                       ),
+                       infoBoxOutput(width = 12,
+                                     "by_sector_infobox")
+                       )
+              )
+              ),
       
       tabItem(tabName = 'notes',
               box(title = 'Notes', p('Notes coming soon.'))
@@ -160,6 +184,24 @@ server <- function(input, output) {
   output$by_party_infobox <- renderInfoBox({
     infoBox(
       "Value selected", paste0('£', format(sum(by_party_not_yet_coded()$dntn_value), nsmall = 2, big.mark = ','))
+    )
+  })
+  
+  # By sector
+  by_sector_sector <- reactive({
+    donations %>% 
+      filter(level_1_short == input$by_sector_sector)
+  })
+  
+  by_sector_date_range <- reactive({
+    by_sector_sector() %>% 
+      filter(x_donation_date >= input$by_sector_date_range[1],
+             x_donation_date <= input$by_sector_date_range[2])
+  })
+  
+  output$by_sector_infobox <- renderInfoBox({
+    infoBox(
+      "Value selected", paste0('£', format(sum(by_sector_date_range()$dntn_value), nsmall = 2, big.mark = ','))
     )
   })
   
