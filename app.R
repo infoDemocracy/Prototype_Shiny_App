@@ -93,7 +93,10 @@ ui <- dashboardPage(
               ),
       tabItem(tabName = 'by_sector',
               fluidRow(
-                column(width = 8),
+                column(width = 8,
+                       box(width = 12,
+                           title = 'Donations by sector',
+                           plotOutput('by_sector_party'))),
                 column(width = 4,
                        box(width = 12,
                            title = 'Inputs',
@@ -113,7 +116,12 @@ ui <- dashboardPage(
                        infoBoxOutput(width = 12,
                                      "by_sector_infobox")
                        )
-              )
+              ),
+              fluidRow(
+                box(width = 12,
+                    title = 'Donors',
+                    DT::dataTableOutput("by_sector_donor_table"))
+                )
               ),
       
       tabItem(tabName = 'notes',
@@ -191,7 +199,8 @@ server <- function(input, output) {
   # By sector
   by_sector_sector <- reactive({
     donations %>% 
-      filter(level_1_short == input$by_sector_sector)
+      filter(level_1_short == input$by_sector_sector,
+             dntn_regulated_entity_name %in% parties)
   })
   
   by_sector_date_range <- reactive({
@@ -205,6 +214,31 @@ server <- function(input, output) {
       "Value selected", paste0('£', format(sum(by_sector_date_range()$dntn_value), nsmall = 2, big.mark = ','))
     )
   })
+  
+  output$by_sector_party <- renderPlot({
+    by_sector_date_range() %>%
+      group_by(dntn_regulated_entity_name) %>% 
+      summarise(value = sum(dntn_value)) %>% 
+      ggplot(aes(fct_reorder(dntn_regulated_entity_name, value), value)) +
+      geom_bar(stat = 'identity', fill = 'navyblue') +
+      coord_flip() +
+      labs(x = 'Sector',
+           y = 'Total value of donations (£)')
+  })
+  
+  output$by_sector_donor_table <- DT::renderDataTable({
+    by_sector_date_range() %>% 
+      group_by(Donor = x_donor_name,
+               `Interest Group` = level_1_short,
+               Wikipedia = wikipedia,
+               Powerbase = powerbase) %>% 
+      summarise(Donations = n(),
+                Value = round(sum(dntn_value))) %>% 
+      ungroup() %>% 
+      arrange(desc(Value)) %>% 
+      mutate(Wikipedia = ifelse(!is.na(Wikipedia), paste0('<a href="', Wikipedia, '" target="_blank">Here</a>'), NA),
+             Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA))
+  }, escape = FALSE)
   
 }
 
