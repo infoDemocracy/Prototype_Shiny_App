@@ -95,7 +95,7 @@ ui <- dashboardPage(
               fluidRow(
                 column(width = 8,
                        box(width = 12,
-                           title = 'Donations by sector',
+                           title = 'Donations by party',
                            plotOutput('by_sector_party'))),
                 column(width = 4,
                        box(width = 12,
@@ -222,7 +222,7 @@ server <- function(input, output) {
       ggplot(aes(fct_reorder(dntn_regulated_entity_name, value), value)) +
       geom_bar(stat = 'identity', fill = 'navyblue') +
       coord_flip() +
-      labs(x = 'Sector',
+      labs(x = 'Party',
            y = 'Total value of donations (£)')
   })
   
