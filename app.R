@@ -31,6 +31,7 @@ ui <- dashboardPage(
     sidebarMenu(menuItem("Overview", tabName = "overview", icon = icon("signal")),
                 menuItem("By party", tabName = "by_party", icon = icon("th")),
                 menuItem("By sector", tabName = "by_sector", icon = icon("th")),
+                menuItem("Brexit", tabName = "brexit", icon = icon("th")),
                 menuItem("Notes", tabName = "notes", icon = icon("th")))
   ),
   dashboardBody(
@@ -91,6 +92,10 @@ ui <- dashboardPage(
                     DT::dataTableOutput("by_party_donor_table"))
               )
               ),
+      
+      tabItem(tabName = 'brexit',
+              fluidRow()),
+      
       tabItem(tabName = 'by_sector',
               fluidRow(
                 column(width = 8,
@@ -134,7 +139,7 @@ ui <- dashboardPage(
 # Server ------------------------------------------------------------------
 server <- function(input, output) {
   
-  # Overview
+  # Overview ----
   
   output$overview_time <- renderPlot({
     donations %>% 
@@ -148,7 +153,7 @@ server <- function(input, output) {
            y = 'Total value (£)')
   })
   
-  # By party
+  # By party ----
   by_party_party <- reactive({
     donations %>% 
       filter(dntn_regulated_entity_name == input$by_party_party)
@@ -196,7 +201,7 @@ server <- function(input, output) {
     )
   })
   
-  # By sector
+  # By sector ----
   by_sector_sector <- reactive({
     donations %>% 
       filter(level_1_short == input$by_sector_sector,
@@ -239,6 +244,13 @@ server <- function(input, output) {
       mutate(Wikipedia = ifelse(!is.na(Wikipedia), paste0('<a href="', Wikipedia, '" target="_blank">Here</a>'), NA),
              Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA))
   }, escape = FALSE)
+  
+  # Brexit ---- 
+  
+  brexit <- reactive({
+    donations %>% 
+      filter(dntn_reporting_period_name == 'Referendum on the UK’s membership of the EU')
+  })
   
 }
 
