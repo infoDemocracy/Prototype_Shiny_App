@@ -24,6 +24,11 @@ parties <- c('Conservative and Unionist Party',
              'Scottish National Party (SNP)',
              'Plaid Cymru - The Party of Wales') 
 
+sectors <- donations %>%
+  pull(level_1_short) %>%
+  unique() %>%
+  sort()
+
 # UI ----------------------------------------------------------------------
 ui <- dashboardPage(
   dashboardHeader(title = 'infoDemocracy'),
@@ -104,11 +109,7 @@ ui <- dashboardPage(
                            title = 'Inputs',
                            selectInput('by_sector_sector',
                                        label = 'Sector',
-                                       choices = donations %>%
-                                         pull(level_1_short) %>%
-                                         unique() %>%
-                                         sort() %>% 
-                                         as.list()
+                                       choices = as.list(sectors)
                            ),
                            dateRangeInput("by_sector_date_range",
                                           label = "Date range",
