@@ -93,9 +93,6 @@ ui <- dashboardPage(
               )
               ),
       
-      tabItem(tabName = 'brexit',
-              fluidRow()),
-      
       tabItem(tabName = 'by_sector',
               fluidRow(
                 column(width = 8,
@@ -128,6 +125,21 @@ ui <- dashboardPage(
                     DT::dataTableOutput("by_sector_donor_table"))
                 )
               ),
+      
+      tabItem(tabName = 'brexit',
+              fluidRow(
+                column(width = 8,
+                       box(width = 12,
+                           title = 'Brexit donations by recipient',
+                           plotOutput('brexit_by_recipient'))),
+                column(width = 4,
+                       box(width = 12,
+                           title = 'Inputs',
+                           checkboxInput("brexit_not_yet_coded",
+                                         label = "Include not yet coded?",
+                                         value = FALSE)
+                           ))
+              )),
       
       tabItem(tabName = 'notes',
               box(title = 'Notes', p('Notes coming soon.'))
@@ -252,6 +264,24 @@ server <- function(input, output) {
       filter(dntn_reporting_period_name == 'Referendum on the UK’s membership of the EU')
   })
   
+  brexit_not_yet_coded <- reactive({
+    if(input$brexit_not_yet_coded) return(brexit())
+    filter(brexit(), level_1 != 'Z')
+  })
+  
+  output$brexit_by_recipient <- renderPlot({
+    brexit_not_yet_coded() %>% 
+      group_by(dntn_regulated_entity_name) %>% 
+      summarise(value = sum(dntn_value)) %>% 
+      ggplot(aes(fct_reorder(dntn_regulated_entity_name, value), value)) +
+      geom_bar(stat = 'identity', fill = 'navyblue') +
+      coord_flip() +
+      labs(x = 'Recipient',
+           y = 'Total value of donations (£)')
+      
+  })
+    
+      
 }
 
 # Run application ---------------------------------------------------------
