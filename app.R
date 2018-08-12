@@ -7,14 +7,17 @@ library(dplyr)
 library(forcats)
 library(ggplot2)
 library(DT)
+library(readr)
 
 # Data --------------------------------------------------------------------
 load('info_democracy.Rdata')
+brexit <- read_csv('brexit.csv')
 
 # Remove pre-poll duplicates
 donations <- donations %>% 
   filter(dntn_is_reported_pre_poll %in% c('False', 'Normal'),
-         level_1 != 'P1')
+         level_1 != 'P1') %>% 
+  left_join(brexit, by = 'dntn_regulated_entity_name')
 
 parties <- c('Conservative and Unionist Party',
              'Labour Party',
@@ -131,15 +134,30 @@ ui <- dashboardPage(
               fluidRow(
                 column(width = 8,
                        box(width = 12,
-                           title = 'Brexit donations by recipient',
-                           plotOutput('brexit_by_recipient'))),
+                           title = 'Brexit donations by sector',
+                           plotOutput('brexit_by_sector'))),
                 column(width = 4,
                        box(width = 12,
                            title = 'Inputs',
+                           selectInput('brexit_position',
+                                       label = 'Position',
+                                       choices = as.list(c('Leave', 'Remain'))),
                            checkboxInput("brexit_not_yet_coded",
                                          label = "Include not yet coded?",
                                          value = FALSE)
-                           ))
+                           ),
+                       infoBox(width = 12,
+                               title = 'Value - Leave',
+                               paste0('£', format(sum(filter(donations, brexit_position == 'Leave')$dntn_value), big.mark = ',', nsmall = 2))),
+                       infoBox(width = 12,
+                               title = 'Value - Remain',
+                               paste0('£', format(sum(filter(donations, brexit_position == 'Remain')$dntn_value), big.mark = ',', nsmall = 2)))
+                       )
+              ),
+              fluidRow(
+                box(width = 12,
+                    title = 'Donors',
+                    DT::dataTableOutput("brexit_donor_table"))
               )),
       
       tabItem(tabName = 'notes',
@@ -270,17 +288,35 @@ server <- function(input, output) {
     filter(brexit(), level_1 != 'Z')
   })
   
-  output$brexit_by_recipient <- renderPlot({
+  brexit_position <- reactive({
     brexit_not_yet_coded() %>% 
-      group_by(dntn_regulated_entity_name) %>% 
-      summarise(value = sum(dntn_value)) %>% 
-      ggplot(aes(fct_reorder(dntn_regulated_entity_name, value), value)) +
-      geom_bar(stat = 'identity', fill = 'navyblue') +
-      coord_flip() +
-      labs(x = 'Recipient',
-           y = 'Total value of donations (£)')
-      
+      filter(brexit_position == input$brexit_position)
   })
+  
+  output$brexit_by_sector <- renderPlot({
+    brexit_not_yet_coded() %>% 
+        group_by(level_1_short, Position = brexit_position) %>% 
+        summarise(value = sum(dntn_value)) %>% 
+        ggplot(aes(level_1_short, value, fill = Position)) +
+        geom_bar(stat = 'identity', position = 'dodge') +
+        coord_flip() +
+        labs(x = 'Sector',
+             y = 'Total value of donations (£)')
+    })
+    
+    output$brexit_donor_table <- DT::renderDataTable({
+      brexit_position() %>% 
+        group_by(Donor = x_donor_name,
+                 `Interest Group` = level_1_short,
+                 Wikipedia = wikipedia,
+                 Powerbase = powerbase) %>% 
+        summarise(Donations = n(),
+                  Value = round(sum(dntn_value))) %>% 
+        ungroup() %>% 
+        arrange(desc(Value)) %>% 
+        mutate(Wikipedia = ifelse(!is.na(Wikipedia), paste0('<a href="', Wikipedia, '" target="_blank">Here</a>'), NA),
+               Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA))
+    }, escape = FALSE)
     
       
 }
