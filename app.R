@@ -48,7 +48,10 @@ ui <- dashboardPage(
               fluidRow(column(width = 8,
                               box(width = 12,
                                   title = 'Introduction',
-                                  p('Welcome to infoDemocracy!')),
+                                  p('Welcome to infoDemocracy! The idea of this project is to try and understand political funding in the UK in a more systematic way.',
+                                    'We do this by researching individual donors and assigning \'interest codes\' based on their primary source of income.',
+                                    'In this way the project takes inspiration from', a('Thomas Ferguson', href = 'https://en.wikipedia.org/wiki/Thomas_Ferguson_(academic)'), 'and', a('Open Secrets', href = 'https://www.opensecrets.org/'), ', and applies their approach to political finance to the UK.'),
+                                  p('More information about the methodology behind the data can be found on the notes tab.')),
                               box(width = 12,
                                   plotOutput('overview_time'))
                               ),
@@ -317,8 +320,7 @@ server <- function(input, output) {
         mutate(Wikipedia = ifelse(!is.na(Wikipedia), paste0('<a href="', Wikipedia, '" target="_blank">Here</a>'), NA),
                Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA))
     }, escape = FALSE)
-    
-      
+
 }
 
 # Run application ---------------------------------------------------------
