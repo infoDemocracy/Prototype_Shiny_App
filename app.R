@@ -164,7 +164,9 @@ ui <- dashboardPage(
               )),
       
       tabItem(tabName = 'notes',
-              box(title = 'Notes', p('Notes coming soon.'))
+              box(title = 'Notes',
+                  width = 12,
+                  p('Notes coming soon.'))
               )
     )
   )
