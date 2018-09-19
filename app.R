@@ -215,6 +215,7 @@ server <- function(input, output) {
       summarise(total = sum(dntn_value)) %>% 
       ggplot(aes(x_donation_year, total)) + 
       geom_bar(stat = 'identity', fill = 'navyblue') +
+      scale_x_continuous(limits = c(2000, year(today())+1), breaks = 2000:(year(today())+1)) +
       labs(title = 'Total value of donations by year',
            x = 'Year',
            y = 'Total value (£)')
@@ -394,7 +395,7 @@ server <- function(input, output) {
         summarise(total = sum(dntn_value)) %>% 
         ggplot(aes(x_donation_year, total)) + 
         geom_bar(stat = 'identity', fill = 'navyblue') +
-        scale_x_continuous(limits = c(2001, year(today())), breaks = 2001:year(today())) +
+        scale_x_continuous(limits = c(2000, year(today())+1), breaks = 2000:(year(today())+1)) +
         labs(title = 'Total value of donations by year',
              x = 'Year',
              y = 'Total value (£)')
