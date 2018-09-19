@@ -33,14 +33,20 @@ sectors <- donations %>%
   unique() %>%
   sort()
 
+donors <- donations %>% 
+  pull(x_donor_name) %>% 
+  unique() %>% 
+  sort()
+
 # UI ----------------------------------------------------------------------
 ui <- dashboardPage(
   dashboardHeader(title = 'infoDemocracy'),
   dashboardSidebar(
-    sidebarMenu(menuItem("Overview", tabName = "overview", icon = icon("signal")),
+    sidebarMenu(menuItem("Overview", tabName = "overview", icon = icon("th")),
                 menuItem("By party", tabName = "by_party", icon = icon("th")),
                 menuItem("By sector", tabName = "by_sector", icon = icon("th")),
                 menuItem("Brexit", tabName = "brexit", icon = icon("th")),
+                menuItem("Donors", tabName = "donors", icon = icon("th")),
                 menuItem("Notes", tabName = "notes", icon = icon("th")))
   ),
   dashboardBody(
@@ -163,6 +169,30 @@ ui <- dashboardPage(
                     title = 'Donors',
                     DT::dataTableOutput("brexit_donor_table"))
               )),
+      
+      tabItem(tabName = 'donors',
+              fluidRow(
+                box(width = 8,
+                    title = 'individual donors',
+                    plotOutput('donor_by_year')),
+                box(width = 4,
+                    title = 'Inputs',
+                    selectizeInput(inputId = 'donors',
+                                   label = 'Select donor',
+                                   choices = c(Choose = '', as.list(donors))),
+                    strong('Interest code:'),
+                    p(textOutput(outputId = 'donor_interest_code')),
+                    strong('Wikipedia:'),
+                    p(textOutput(outputId = 'donor_wikipedia')),
+                    strong('Powerbase:'),
+                    p(textOutput(outputId = 'donor_powerbase'))
+                    )
+              ),
+              fluidRow(
+                box(width = 12,
+                    title = 'Donations',
+                    DT::dataTableOutput("donor_info_table"))
+                )),
       
       tabItem(tabName = 'notes',
               box(title = 'Notes',
@@ -323,6 +353,52 @@ server <- function(input, output) {
         mutate(Wikipedia = ifelse(!is.na(Wikipedia), paste0('<a href="', Wikipedia, '" target="_blank">Here</a>'), NA),
                Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA))
     }, escape = FALSE)
+    
+    # Donors ----
+    
+    donor_info <- reactive({
+      donations %>% 
+        filter(x_donor_name == input$donors)
+    })
+    
+    output$donor_info_table <- DT::renderDataTable({
+      donor_info() %>%
+        select(Reference = dntn_ec_ref,
+               Date = x_donation_date,
+               Recipient = dntn_regulated_entity_name,
+               Value = dntn_value) %>% 
+        arrange(Date)
+    }, escape = FALSE)
+    
+    output$donor_interest_code <- renderText({
+      donor_info() %>% 
+        pull(level_1_short) %>%
+        unique()
+    })
+    
+    output$donor_wikipedia <- renderText({
+      donor_info() %>% 
+        pull(wikipedia) %>%
+        unique()
+    })
+    
+    output$donor_powerbase <- renderText({
+      donor_info() %>% 
+        pull(powerbase) %>%
+        unique()
+    })
+    
+    output$donor_by_year <- renderPlot({
+      donor_info() %>% 
+        group_by(x_donation_year) %>% 
+        summarise(total = sum(dntn_value)) %>% 
+        ggplot(aes(x_donation_year, total)) + 
+        geom_bar(stat = 'identity', fill = 'navyblue') +
+        scale_x_continuous(limits = c(2001, year(today())), breaks = 2001:year(today())) +
+        labs(title = 'Total value of donations by year',
+             x = 'Year',
+             y = 'Total value (£)')
+    })
 
 }
 
