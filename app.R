@@ -8,6 +8,7 @@ library(forcats)
 library(ggplot2)
 library(DT)
 library(readr)
+library(lubridate)
 
 # Data --------------------------------------------------------------------
 load('info_democracy.Rdata')
