@@ -13,6 +13,7 @@ library(lubridate)
 # Data --------------------------------------------------------------------
 load('info_democracy.Rdata')
 brexit <- read_csv('brexit.csv')
+evidence <- read_csv("evidence.csv")
 
 # Remove pre-poll duplicates
 donations <- donations %>% 
@@ -189,9 +190,10 @@ ui <- dashboardPage(
                     )
               ),
               fluidRow(
-                box(width = 12,
-                    title = 'Donations',
-                    DT::dataTableOutput("donor_info_table"))
+                tabBox(width = 12,
+                       tabPanel('Data', DT::dataTableOutput("donor_info_table")),
+                       tabPanel('Evidence', DT::dataTableOutput("donor_evidence"))
+                       )
                 )),
       
       tabItem(tabName = 'notes',
@@ -370,6 +372,13 @@ server <- function(input, output) {
                Value = dntn_value) %>% 
         arrange(Date)
     }, escape = FALSE)
+    
+    output$donor_evidence <- DT::renderDataTable({
+      id <- donations$donor_id[match(input$donors, donations$x_donor_name)]
+      
+      filter(evidence, donor_id == id) %>% 
+        select(evidence)
+    })
     
     output$donor_interest_code <- renderText({
       donor_info() %>% 
