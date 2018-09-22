@@ -173,21 +173,25 @@ ui <- dashboardPage(
       
       tabItem(tabName = 'donors',
               fluidRow(
-                box(width = 8,
-                    title = 'individual donors',
-                    plotOutput('donor_by_year')),
-                box(width = 4,
-                    title = 'Inputs',
-                    selectizeInput(inputId = 'donors',
-                                   label = 'Select donor',
-                                   choices = c(Choose = '', as.list(donors))),
-                    strong('Interest code:'),
-                    p(textOutput(outputId = 'donor_interest_code')),
-                    strong('Wikipedia:'),
-                    p(textOutput(outputId = 'donor_wikipedia')),
-                    strong('Powerbase:'),
-                    p(textOutput(outputId = 'donor_powerbase'))
-                    )
+                column(width = 8,
+                       box(width = 12,
+                           title = 'individual donors',
+                           plotOutput('donor_by_year'))),
+                column(width = 4,
+                       box(width = 12,
+                           title = 'Inputs',
+                           selectizeInput(inputId = 'donors',
+                                          label = 'Select donor',
+                                          choices = c(Choose = '', as.list(donors))),
+                           strong('Interest code:'),
+                           p(textOutput(outputId = 'donor_interest_code')),
+                           strong('Wikipedia:'),
+                           p(textOutput(outputId = 'donor_wikipedia')),
+                           strong('Powerbase:'),
+                           p(textOutput(outputId = 'donor_powerbase'))),
+                       infoBoxOutput(width = 12,
+                                     "donor_infobox")
+                       )
               ),
               fluidRow(
                 tabBox(width = 12,
@@ -397,6 +401,12 @@ server <- function(input, output) {
       donor_info() %>% 
         pull(powerbase) %>%
         unique()
+    })
+    
+    output$donor_infobox <- renderInfoBox({
+      infoBox(
+        "Value selected", paste0('£', format(sum(donor_info()$dntn_value), nsmall = 2, big.mark = ','))
+      )
     })
     
     output$donor_by_year <- renderPlot({
