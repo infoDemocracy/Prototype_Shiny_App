@@ -186,9 +186,9 @@ ui <- dashboardPage(
                            strong('Interest code:'),
                            p(textOutput(outputId = 'donor_interest_code')),
                            strong('Wikipedia:'),
-                           p(textOutput(outputId = 'donor_wikipedia')),
+                           uiOutput(outputId = 'donor_wikipedia'),
                            strong('Powerbase:'),
-                           p(textOutput(outputId = 'donor_powerbase'))),
+                           uiOutput(outputId = 'donor_powerbase')),
                        infoBoxOutput(width = 12,
                                      "donor_infobox")
                        )
@@ -364,6 +364,9 @@ server <- function(input, output) {
     # Donors ----
     
     donor_info <- reactive({
+      
+      req(input$donors)
+      
       donations %>% 
         filter(x_donor_name == input$donors)
     })
@@ -391,16 +394,26 @@ server <- function(input, output) {
         unique()
     })
     
-    output$donor_wikipedia <- renderText({
-      donor_info() %>% 
+    output$donor_wikipedia <- renderUI({
+      wikipedia <- donor_info() %>% 
         pull(wikipedia) %>%
         unique()
+      
+      if(is.na(wikipedia)) return(NULL)
+      
+      a(wikipedia, href = wikipedia)
+      
     })
     
-    output$donor_powerbase <- renderText({
-      donor_info() %>% 
+    output$donor_powerbase <- renderUI({
+      powerbase <- donor_info() %>% 
         pull(powerbase) %>%
         unique()
+      
+      if(is.na(powerbase)) return(NULL)
+      
+      a(powerbase, href = powerbase)
+      
     })
     
     output$donor_infobox <- renderInfoBox({
