@@ -84,7 +84,7 @@ ui <- dashboardPage(
               fluidRow(
                 column(width = 8,
                        box(width = 12,
-                           title = 'Donations by sector',
+                           title = 'By party',
                            plotOutput('by_party_sector'))),
                 column(width = 4,
                        box(width = 12,
@@ -116,7 +116,7 @@ ui <- dashboardPage(
               fluidRow(
                 column(width = 8,
                        box(width = 12,
-                           title = 'Donations by party',
+                           title = 'By sector',
                            plotOutput('by_sector_party'))),
                 column(width = 4,
                        box(width = 12,
@@ -145,7 +145,7 @@ ui <- dashboardPage(
               fluidRow(
                 column(width = 8,
                        box(width = 12,
-                           title = 'Brexit donations by sector',
+                           title = 'Brexit',
                            plotOutput('brexit_by_sector'))),
                 column(width = 4,
                        box(width = 12,
@@ -175,7 +175,7 @@ ui <- dashboardPage(
               fluidRow(
                 column(width = 8,
                        box(width = 12,
-                           title = 'individual donors',
+                           title = 'Donors',
                            plotOutput('donor_by_year'))),
                 column(width = 4,
                        box(width = 12,
