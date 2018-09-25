@@ -376,6 +376,7 @@ server <- function(input, output) {
         select(Reference = dntn_ec_ref,
                Date = x_donation_date,
                Recipient = dntn_regulated_entity_name,
+               `Donated as` = dntn_donor_name,
                Value = dntn_value) %>% 
         arrange(Date)
     }, escape = FALSE)
