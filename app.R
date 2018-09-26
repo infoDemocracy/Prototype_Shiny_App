@@ -185,9 +185,8 @@ ui <- dashboardPage(
                                           choices = c(Choose = '', as.list(donors))),
                            strong('Interest code:'),
                            p(textOutput(outputId = 'donor_interest_code')),
-                           strong('Wikipedia:'),
+                           strong('Profiles:'),
                            uiOutput(outputId = 'donor_wikipedia'),
-                           strong('Powerbase:'),
                            uiOutput(outputId = 'donor_powerbase')),
                        infoBoxOutput(width = 12,
                                      "donor_infobox")
@@ -402,7 +401,7 @@ server <- function(input, output) {
       
       if(is.na(wikipedia)) return(NULL)
       
-      a(wikipedia, href = wikipedia)
+      a('Wikipedia', href = wikipedia)
       
     })
     
@@ -413,7 +412,7 @@ server <- function(input, output) {
       
       if(is.na(powerbase)) return(NULL)
       
-      a(powerbase, href = powerbase)
+      a('Powerbase', href = powerbase)
       
     })
     
