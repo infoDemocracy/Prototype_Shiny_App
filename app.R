@@ -384,8 +384,8 @@ server <- function(input, output) {
       id <- donations$donor_id[match(input$donors, donations$x_donor_name)]
       
       filter(evidence, donor_id == id) %>% 
-        select(evidence) %>% 
-        mutate(evidence = paste0('<a href="', evidence, '">', evidence, '</a>'))
+        select(Evidence = evidence) %>% 
+        mutate(Evidence = paste0('<a href="', Evidence, '">', Evidence, '</a>'))
     }, escape = FALSE)
     
     output$donor_interest_code <- renderText({
