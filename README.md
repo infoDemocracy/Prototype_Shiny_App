@@ -1,2 +1,2 @@
-# infoDemocracy_shiny_app
-Shiny application for infoDemocracy
+# Prototype Shiny App
+This repository creates a prototype Shiny application for infoDemocracy.
