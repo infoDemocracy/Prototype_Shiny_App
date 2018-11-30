@@ -11,9 +11,9 @@ library(readr)
 library(lubridate)
 
 # Data --------------------------------------------------------------------
-load('info_democracy.Rdata')
-brexit <- read_csv('brexit.csv')
-evidence <- read_csv("evidence.csv")
+load('Data/info_democracy.Rdata')
+brexit <- read_csv('Data/brexit.csv')
+evidence <- read_csv("Data/evidence.csv")
 
 # Remove pre-poll duplicates
 donations <- donations %>% 
