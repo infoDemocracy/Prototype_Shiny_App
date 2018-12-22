@@ -16,7 +16,7 @@ brexit <- read_csv('Data/brexit.csv')
 evidence <- read_csv("Data/evidence.csv")
 
 # Remove pre-poll duplicates
-donations <- donations %>% 
+info_democracy <- info_democracy %>% 
   filter(dntn_is_reported_pre_poll == FALSE,
          level_1 != 'P1') %>% 
   left_join(brexit, by = 'dntn_regulated_entity_name')
@@ -29,12 +29,12 @@ parties <- c('Conservative and Unionist Party',
              'Scottish National Party (SNP)',
              'Plaid Cymru - The Party of Wales') 
 
-sectors <- donations %>%
+sectors <- info_democracy %>%
   pull(level_1_short) %>%
   unique() %>%
   sort()
 
-donors <- donations %>% 
+donors <- info_democracy %>% 
   pull(x_donor_name) %>% 
   unique() %>% 
   sort()
@@ -66,16 +66,16 @@ ui <- dashboardPage(
                        column(width = 4,
                               infoBox(width = 12,
                                       title = 'Value',
-                                      paste0('£', format(sum(donations$dntn_value), big.mark = ',', nsmall = 2))),
+                                      paste0('£', format(sum(info_democracy$dntn_value), big.mark = ',', nsmall = 2))),
                               infoBox(width = 12,
                                       title = 'Donations',
-                                      format(nrow(donations), big.mark = ',')),
+                                      format(nrow(info_democracy), big.mark = ',')),
                               infoBox(width = 12,
                                       title = 'Donations Coded',
-                                      paste0(round(mean(donations$x_coded)*100, 1), '%')),
+                                      paste0(round(mean(info_democracy$x_coded)*100, 1), '%')),
                               infoBox(width = 12,
                                       title = 'Value Coded',
-                                      paste0(round((sum(donations[donations$x_coded == TRUE, ]$dntn_value/sum(donations$dntn_value)))*100, 1), '%'))
+                                      paste0(round((sum(info_democracy[info_democracy$x_coded == TRUE, ]$dntn_value/sum(info_democracy$dntn_value)))*100, 1), '%'))
                               )
                        )
       ),
@@ -95,7 +95,7 @@ ui <- dashboardPage(
                            ),
                            dateRangeInput("by_party_date_range",
                                           label = "Date range",
-                                          start = min(donations$x_donation_date, na.rm = T),
+                                          start = min(info_democracy$x_donation_date, na.rm = T),
                                           end = Sys.Date()),
                            checkboxInput("by_party_not_yet_coded",
                                          label = "Include not yet coded?",
@@ -127,7 +127,7 @@ ui <- dashboardPage(
                            ),
                            dateRangeInput("by_sector_date_range",
                                           label = "Date range",
-                                          start = min(donations$x_donation_date, na.rm = T),
+                                          start = min(info_democracy$x_donation_date, na.rm = T),
                                           end = Sys.Date())
                        ),
                        infoBoxOutput(width = 12,
@@ -159,10 +159,10 @@ ui <- dashboardPage(
                            ),
                        infoBox(width = 12,
                                title = 'Value - Leave',
-                               paste0('£', format(sum(filter(donations, brexit_position == 'Leave')$dntn_value), big.mark = ',', nsmall = 2))),
+                               paste0('£', format(sum(filter(info_democracy, brexit_position == 'Leave')$dntn_value), big.mark = ',', nsmall = 2))),
                        infoBox(width = 12,
                                title = 'Value - Remain',
-                               paste0('£', format(sum(filter(donations, brexit_position == 'Remain')$dntn_value), big.mark = ',', nsmall = 2)))
+                               paste0('£', format(sum(filter(info_democracy, brexit_position == 'Remain')$dntn_value), big.mark = ',', nsmall = 2)))
                        )
               ),
               fluidRow(
@@ -214,7 +214,7 @@ server <- function(input, output) {
   # Overview ----
   
   output$overview_time <- renderPlot({
-    donations %>% 
+    info_democracy %>% 
       filter(!is.na(x_donation_year)) %>% 
       group_by(x_donation_year) %>% 
       summarise(total = sum(dntn_value)) %>% 
@@ -228,7 +228,7 @@ server <- function(input, output) {
   
   # By party ----
   by_party_party <- reactive({
-    donations %>% 
+    info_democracy %>% 
       filter(dntn_regulated_entity_name == input$by_party_party)
   })
   
@@ -276,7 +276,7 @@ server <- function(input, output) {
   
   # By sector ----
   by_sector_sector <- reactive({
-    donations %>% 
+    info_democracy %>% 
       filter(level_1_short == input$by_sector_sector,
              dntn_regulated_entity_name %in% parties)
   })
@@ -321,7 +321,7 @@ server <- function(input, output) {
   # Brexit ---- 
   
   brexit <- reactive({
-    donations %>% 
+    info_democracy %>% 
       filter(dntn_reporting_period_name == 'Referendum on the UK’s membership of the EU')
   })
   
@@ -366,7 +366,7 @@ server <- function(input, output) {
       
       req(input$donors)
       
-      donations %>% 
+      info_democracy %>% 
         filter(x_donor_name == input$donors)
     })
     
@@ -381,7 +381,7 @@ server <- function(input, output) {
     }, escape = FALSE)
     
     output$donor_evidence <- DT::renderDataTable({
-      id <- donations$donor_id[match(input$donors, donations$x_donor_name)]
+      id <- info_democracy$donor_id[match(input$donors, info_democracy$x_donor_name)]
       
       filter(evidence, donor_id == id) %>% 
         select(Evidence = evidence) %>% 
