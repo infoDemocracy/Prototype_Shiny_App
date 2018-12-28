@@ -48,6 +48,7 @@ ui <- dashboardPage(
                 menuItem("By sector", tabName = "by_sector", icon = icon("th")),
                 menuItem("Brexit", tabName = "brexit", icon = icon("th")),
                 menuItem("Donors", tabName = "donors", icon = icon("th")),
+                menuItem("Download data", tabName = "data", icon = icon("th")),
                 menuItem("Notes", tabName = "notes", icon = icon("th")))
   ),
   dashboardBody(
@@ -198,6 +199,12 @@ ui <- dashboardPage(
                        tabPanel('Evidence', DT::dataTableOutput("donor_evidence"))
                        )
                 )),
+      
+      tabItem(tabName = 'data',
+              box(title = 'Download data',
+                  width = 12,
+                  p('Data coming soon.'))
+              ),
       
       tabItem(tabName = 'notes',
               box(title = 'Notes',
