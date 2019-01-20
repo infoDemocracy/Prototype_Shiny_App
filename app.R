@@ -272,8 +272,10 @@ server <- function(input, output) {
       ungroup() %>% 
       arrange(desc(Value)) %>% 
       mutate(Wikipedia = ifelse(!is.na(Wikipedia), paste0('<a href="', Wikipedia, '" target="_blank">Here</a>'), NA),
-             Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA))
-  }, escape = FALSE)
+             Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA)) %>% 
+      DT::datatable(escape = FALSE) %>% 
+      formatCurrency('Value', currency = '£')
+  })
   
   output$by_party_infobox <- renderInfoBox({
     infoBox(
@@ -322,8 +324,10 @@ server <- function(input, output) {
       ungroup() %>% 
       arrange(desc(Value)) %>% 
       mutate(Wikipedia = ifelse(!is.na(Wikipedia), paste0('<a href="', Wikipedia, '" target="_blank">Here</a>'), NA),
-             Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA))
-  }, escape = FALSE)
+             Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA)) %>% 
+      DT::datatable(escape = FALSE) %>% 
+      formatCurrency('Value', currency = '£')
+  })
   
   # Brexit ---- 
   
@@ -364,8 +368,10 @@ server <- function(input, output) {
         ungroup() %>% 
         arrange(desc(Value)) %>% 
         mutate(Wikipedia = ifelse(!is.na(Wikipedia), paste0('<a href="', Wikipedia, '" target="_blank">Here</a>'), NA),
-               Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA))
-    }, escape = FALSE)
+               Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA)) %>% 
+        DT::datatable(escape = FALSE) %>% 
+        formatCurrency('Value', currency = '£')
+    })
     
     # Donors ----
     
@@ -384,8 +390,10 @@ server <- function(input, output) {
                Recipient = dntn_regulated_entity_name,
                `Donated as` = dntn_donor_name,
                Value = dntn_value) %>% 
-        arrange(Date)
-    }, escape = FALSE)
+        arrange(Date) %>% 
+        DT::datatable(escape = FALSE) %>% 
+        formatCurrency('Value', currency = '£')
+    })
     
     output$donor_evidence <- DT::renderDataTable({
       id <- info_democracy$donor_id[match(input$donors, info_democracy$x_donor_name)]
