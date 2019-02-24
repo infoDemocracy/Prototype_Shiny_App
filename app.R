@@ -9,6 +9,7 @@ library(ggplot2)
 library(DT)
 library(readr)
 library(lubridate)
+library(scales)
 
 # Data --------------------------------------------------------------------
 load('Data/info_democracy.Rdata')
@@ -228,6 +229,7 @@ server <- function(input, output) {
       ggplot(aes(x_donation_year, total)) + 
       geom_bar(stat = 'identity', fill = 'navyblue') +
       scale_x_continuous(limits = c(2000, year(today())+1), breaks = 2000:(year(today())+1)) +
+      scale_y_continuous(labels = dollar_format(prefix = '£')) +
       labs(title = 'Total value of donations by year',
            x = 'Year',
            y = 'Total value (£)')
@@ -256,6 +258,7 @@ server <- function(input, output) {
       summarise(value = sum(dntn_value)) %>% 
       ggplot(aes(level_1_short, value)) +
       geom_bar(stat = 'identity', fill = 'navyblue') +
+      scale_y_continuous(labels = dollar_format(prefix = '£')) +
       coord_flip() +
       labs(x = 'Sector',
            y = 'Total value of donations (£)')
@@ -308,6 +311,7 @@ server <- function(input, output) {
       summarise(value = sum(dntn_value)) %>% 
       ggplot(aes(fct_reorder(dntn_regulated_entity_name, value), value)) +
       geom_bar(stat = 'identity', fill = 'navyblue') +
+      scale_y_continuous(labels = dollar_format(prefix = '£')) +
       coord_flip() +
       labs(x = 'Party',
            y = 'Total value of donations (£)')
@@ -348,12 +352,13 @@ server <- function(input, output) {
   
   output$brexit_by_sector <- renderPlot({
     brexit_not_yet_coded() %>% 
-        group_by(level_1_short, Position = brexit_position) %>% 
-        summarise(value = sum(dntn_value)) %>% 
-        ggplot(aes(level_1_short, value, fill = Position)) +
-        geom_bar(stat = 'identity', position = 'dodge') +
-        coord_flip() +
-        labs(x = 'Sector',
+      group_by(level_1_short, Position = brexit_position) %>% 
+      summarise(value = sum(dntn_value)) %>% 
+      ggplot(aes(level_1_short, value, fill = Position)) +
+      geom_bar(stat = 'identity', position = 'dodge') +
+      scale_y_continuous(labels = dollar_format(prefix = '£')) +
+      coord_flip() +
+      labs(x = 'Sector',
              y = 'Total value of donations (£)')
     })
     
@@ -444,6 +449,7 @@ server <- function(input, output) {
         ggplot(aes(x_donation_year, total)) + 
         geom_bar(stat = 'identity', fill = 'navyblue') +
         scale_x_continuous(limits = c(2000, year(today())+1), breaks = 2000:(year(today())+1)) +
+        scale_y_continuous(labels = dollar_format(prefix = '£')) +
         labs(title = 'Total value of donations by year',
              x = 'Year',
              y = 'Total value (£)')
