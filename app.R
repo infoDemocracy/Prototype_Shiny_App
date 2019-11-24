@@ -18,7 +18,7 @@ evidence <- read_csv("Data/evidence.csv")
 
 # Remove pre-poll duplicates
 info_democracy <- info_democracy %>% 
-  filter(dntn_is_reported_pre_poll == FALSE,
+  filter(x_is_reported_pre_poll == FALSE,
          level_1 != 'P1') %>% 
   left_join(brexit, by = 'dntn_regulated_entity_name')
 
@@ -236,24 +236,19 @@ server <- function(input, output) {
   })
   
   # By party ----
-  by_party_party <- reactive({
-    info_democracy %>% 
-      filter(dntn_regulated_entity_name == input$by_party_party)
-  })
-  
-  by_party_date_range <- reactive({
-    by_party_party() %>% 
-      filter(x_donation_date >= input$by_party_date_range[1],
+  by_party <- reactive({
+    by_party <- info_democracy %>% 
+      filter(dntn_regulated_entity_name == input$by_party_party,
+             x_donation_date >= input$by_party_date_range[1],
              x_donation_date <= input$by_party_date_range[2])
-  })
-  
-  by_party_not_yet_coded <- reactive({
-    if(input$by_party_not_yet_coded) return(by_party_date_range())
-    filter(by_party_date_range(), level_1 != 'Z')
+    
+    if(input$by_party_not_yet_coded) return(by_party)
+    filter(by_party, level_1 != 'Z')
+    
   })
   
   output$by_party_sector <- renderPlot({
-    by_party_not_yet_coded() %>%
+    by_party() %>%
       group_by(level_1_short) %>% 
       summarise(value = sum(dntn_value)) %>% 
       ggplot(aes(level_1_short, value)) +
@@ -265,7 +260,7 @@ server <- function(input, output) {
   })
   
   output$by_party_donor_table <- DT::renderDataTable({
-    by_party_not_yet_coded() %>% 
+    by_party() %>% 
       group_by(Donor = x_donor_name,
                `Interest Group` = level_1_short,
                Wikipedia = wikipedia,
@@ -282,31 +277,27 @@ server <- function(input, output) {
   
   output$by_party_infobox <- renderInfoBox({
     infoBox(
-      "Value selected", paste0('£', format(sum(by_party_not_yet_coded()$dntn_value), nsmall = 2, big.mark = ','))
+      "Value selected", paste0('£', format(sum(by_party()$dntn_value), nsmall = 2, big.mark = ','))
     )
   })
   
   # By sector ----
-  by_sector_sector <- reactive({
+  by_sector <- reactive({
     info_democracy %>% 
       filter(level_1_short == input$by_sector_sector,
-             dntn_regulated_entity_name %in% parties)
-  })
-  
-  by_sector_date_range <- reactive({
-    by_sector_sector() %>% 
-      filter(x_donation_date >= input$by_sector_date_range[1],
+             dntn_regulated_entity_name %in% parties,
+             x_donation_date >= input$by_sector_date_range[1],
              x_donation_date <= input$by_sector_date_range[2])
   })
   
   output$by_sector_infobox <- renderInfoBox({
     infoBox(
-      "Value selected", paste0('£', format(sum(by_sector_date_range()$dntn_value), nsmall = 2, big.mark = ','))
+      "Value selected", paste0('£', format(sum(by_sector()$dntn_value), nsmall = 2, big.mark = ','))
     )
   })
   
   output$by_sector_party <- renderPlot({
-    by_sector_date_range() %>%
+    by_sector() %>%
       group_by(dntn_regulated_entity_name) %>% 
       summarise(value = sum(dntn_value)) %>% 
       ggplot(aes(fct_reorder(dntn_regulated_entity_name, value), value)) +
@@ -318,7 +309,7 @@ server <- function(input, output) {
   })
   
   output$by_sector_donor_table <- DT::renderDataTable({
-    by_sector_date_range() %>% 
+    by_sector() %>% 
       group_by(Donor = x_donor_name,
                `Interest Group` = level_1_short,
                Wikipedia = wikipedia,
