@@ -15,6 +15,7 @@ library(scales)
 load('Data/info_democracy.Rdata')
 brexit <- read_csv('Data/brexit.csv')
 evidence <- read_csv("Data/evidence.csv")
+ge2019 <- info_democracy %>% filter(dntn_reporting_period_name == "Pre-Poll 1 - Party(06/11/19 - 12/11/19) UKPGE 2019")
 
 # Remove pre-poll duplicates
 info_democracy <- info_democracy %>% 
@@ -47,8 +48,9 @@ ui <- dashboardPage(
     sidebarMenu(menuItem("Overview", tabName = "overview", icon = icon("th")),
                 menuItem("By party", tabName = "by_party", icon = icon("th")),
                 menuItem("By sector", tabName = "by_sector", icon = icon("th")),
-                menuItem("Brexit", tabName = "brexit", icon = icon("th")),
                 menuItem("Donors", tabName = "donors", icon = icon("th")),
+                menuItem("Brexit", tabName = "brexit", icon = icon("th")),
+                menuItem("General Election 2019", tabName = "general_election", icon = icon("th")),
                 menuItem("Download data", tabName = "data", icon = icon("th")),
                 menuItem("Notes", tabName = "notes", icon = icon("th")))
   ),
@@ -143,6 +145,34 @@ ui <- dashboardPage(
                 )
               ),
       
+      tabItem(tabName = 'donors',
+              fluidRow(
+                column(width = 8,
+                       box(width = 12,
+                           title = 'Donors',
+                           plotOutput('donor_by_year'))),
+                column(width = 4,
+                       box(width = 12,
+                           title = 'Inputs',
+                           selectizeInput(inputId = 'donors',
+                                          label = 'Select donor',
+                                          choices = as.list(donors)),
+                           strong('Interest code:'),
+                           p(textOutput(outputId = 'donor_interest_code')),
+                           strong('Profiles:'),
+                           uiOutput(outputId = 'donor_wikipedia'),
+                           uiOutput(outputId = 'donor_powerbase')),
+                       infoBoxOutput(width = 12,
+                                     "donor_infobox")
+                )
+              ),
+              fluidRow(
+                tabBox(width = 12,
+                       tabPanel('Data', DT::dataTableOutput("donor_info_table")),
+                       tabPanel('Evidence', DT::dataTableOutput("donor_evidence"))
+                )
+              )),
+      
       tabItem(tabName = 'brexit',
               fluidRow(
                 column(width = 8,
@@ -173,33 +203,36 @@ ui <- dashboardPage(
                     DT::dataTableOutput("brexit_donor_table"))
               )),
       
-      tabItem(tabName = 'donors',
+      tabItem(tabName = 'general_election',
               fluidRow(
-                column(width = 8,
-                       box(width = 12,
-                           title = 'Donors',
-                           plotOutput('donor_by_year'))),
-                column(width = 4,
-                       box(width = 12,
-                           title = 'Inputs',
-                           selectizeInput(inputId = 'donors',
-                                          label = 'Select donor',
-                                          choices = c(Choose = '', as.list(donors))),
-                           strong('Interest code:'),
-                           p(textOutput(outputId = 'donor_interest_code')),
-                           strong('Profiles:'),
-                           uiOutput(outputId = 'donor_wikipedia'),
-                           uiOutput(outputId = 'donor_powerbase')),
-                       infoBoxOutput(width = 12,
-                                     "donor_infobox")
-                       )
+                width = 12,
+                box(width = 4,
+                    title = 'Inputs',
+                    selectizeInput(inputId = 'ge2019',
+                                   label = 'Select party',
+                                   choices = as.list(parties))),
+                infoBoxOutput(width = 4,
+                              "general_election_infobox"),
+                infoBoxOutput(width = 4,
+                              "general_election_total")
               ),
               fluidRow(
-                tabBox(width = 12,
-                       tabPanel('Data', DT::dataTableOutput("donor_info_table")),
-                       tabPanel('Evidence', DT::dataTableOutput("donor_evidence"))
-                       )
-                )),
+                column(
+                  width = 12,
+                  box(width = 6,
+                      title = 'Summary',
+                      plotOutput('general_election_summary')),
+                  box(width = 6,
+                      title = 'Party',
+                      plotOutput('general_election_party'))
+                )
+              ),
+              fluidRow(
+                box(width = 12,
+                    title = 'Donors',
+                    DT::dataTableOutput("general_election_donor_table"))
+              )
+      ),
       
       tabItem(tabName = 'data',
               box(title = 'Download data',
@@ -279,6 +312,83 @@ server <- function(input, output) {
     infoBox(
       "Value selected", paste0('£', format(sum(by_party()$dntn_value), nsmall = 2, big.mark = ','))
     )
+  })
+  
+  # Donors ----
+  
+  donor_info <- reactive({
+    
+    req(input$donors)
+    
+    info_democracy %>% 
+      filter(x_donor_name == input$donors)
+  })
+  
+  output$donor_info_table <- DT::renderDataTable({
+    donor_info() %>%
+      select(Reference = dntn_ec_ref,
+             Date = x_donation_date,
+             Recipient = dntn_regulated_entity_name,
+             `Donated as` = dntn_donor_name,
+             Value = dntn_value) %>% 
+      arrange(Date) %>% 
+      DT::datatable(escape = FALSE) %>% 
+      formatCurrency('Value', currency = '£')
+  })
+  
+  output$donor_evidence <- DT::renderDataTable({
+    id <- info_democracy$donor_id[match(input$donors, info_democracy$x_donor_name)]
+    
+    filter(evidence, donor_id == id) %>% 
+      select(Evidence = evidence) %>% 
+      mutate(Evidence = paste0('<a href="', Evidence, '">', Evidence, '</a>'))
+  }, escape = FALSE)
+  
+  output$donor_interest_code <- renderText({
+    donor_info() %>% 
+      pull(level_1_short) %>%
+      unique()
+  })
+  
+  output$donor_wikipedia <- renderUI({
+    wikipedia <- donor_info() %>% 
+      pull(wikipedia) %>%
+      unique()
+    
+    if(is.na(wikipedia)) return(NULL)
+    
+    a('Wikipedia', href = wikipedia)
+    
+  })
+  
+  output$donor_powerbase <- renderUI({
+    powerbase <- donor_info() %>% 
+      pull(powerbase) %>%
+      unique()
+    
+    if(is.na(powerbase)) return(NULL)
+    
+    a('Powerbase', href = powerbase)
+    
+  })
+  
+  output$donor_infobox <- renderInfoBox({
+    infoBox(
+      "Value selected", paste0('£', format(sum(donor_info()$dntn_value), nsmall = 2, big.mark = ','))
+    )
+  })
+  
+  output$donor_by_year <- renderPlot({
+    donor_info() %>% 
+      group_by(x_donation_year) %>% 
+      summarise(total = sum(dntn_value)) %>% 
+      ggplot(aes(x_donation_year, total)) + 
+      geom_bar(stat = 'identity', fill = 'navyblue') +
+      scale_x_continuous(limits = c(2000, year(today())+1), breaks = 2000:(year(today())+1)) +
+      scale_y_continuous(labels = dollar_format(prefix = '£')) +
+      labs(title = 'Total value of donations by year',
+           x = 'Year',
+           y = 'Total value (£)')
   })
   
   # By sector ----
@@ -369,81 +479,62 @@ server <- function(input, output) {
         formatCurrency('Value', currency = '£')
     })
     
-    # Donors ----
+    # General Election 2019 ----
     
-    donor_info <- reactive({
-      
-      req(input$donors)
-      
-      info_democracy %>% 
-        filter(x_donor_name == input$donors)
+    ge2019_party <- reactive({
+      ge2019 %>%
+        filter(dntn_regulated_entity_name == input$ge2019)
     })
     
-    output$donor_info_table <- DT::renderDataTable({
-      donor_info() %>%
-        select(Reference = dntn_ec_ref,
-               Date = x_donation_date,
-               Recipient = dntn_regulated_entity_name,
-               `Donated as` = dntn_donor_name,
-               Value = dntn_value) %>% 
-        arrange(Date) %>% 
+    output$general_election_summary <- renderPlot({
+      ge2019 %>% 
+        filter(dntn_regulated_entity_name %in% parties) %>% 
+        group_by(dntn_regulated_entity_name) %>% 
+        summarise(total = sum(dntn_value)) %>% 
+        ggplot(aes(fct_reorder(dntn_regulated_entity_name, total), total)) +
+        geom_col(fill = 'navyblue') +
+        scale_y_continuous(labels = dollar_format(prefix = '£')) +
+        labs(x = 'Party') +
+        coord_flip()
+    })
+    
+    output$general_election_party <- renderPlot({
+      ge2019_party() %>% 
+        group_by(level_1_short) %>% 
+        summarise(Total = sum(dntn_value)) %>% 
+        ggplot(aes(fct_reorder(level_1_short, Total), Total)) +
+        geom_col(fill = 'navyblue') +
+        scale_y_continuous(labels = dollar_format(prefix = '£')) +
+        labs(x = 'Party') +
+        coord_flip()
+    })
+    
+    output$general_election_donor_table <- DT::renderDataTable({
+      ge2019_party() %>% 
+        group_by(Donor = x_donor_name,
+                 `Interest Group` = level_1_short,
+                 Wikipedia = wikipedia,
+                 Powerbase = powerbase) %>% 
+        summarise(Donations = n(),
+                  Value = round(sum(dntn_value))) %>% 
+        ungroup() %>% 
+        arrange(desc(Value)) %>% 
+        mutate(Wikipedia = ifelse(!is.na(Wikipedia), paste0('<a href="', Wikipedia, '" target="_blank">Here</a>'), NA),
+               Powerbase = ifelse(!is.na(Powerbase), paste0('<a href="', Powerbase, '" target="_blank">Here</a>'), NA)) %>% 
         DT::datatable(escape = FALSE) %>% 
         formatCurrency('Value', currency = '£')
     })
     
-    output$donor_evidence <- DT::renderDataTable({
-      id <- info_democracy$donor_id[match(input$donors, info_democracy$x_donor_name)]
-      
-      filter(evidence, donor_id == id) %>% 
-        select(Evidence = evidence) %>% 
-        mutate(Evidence = paste0('<a href="', Evidence, '">', Evidence, '</a>'))
-    }, escape = FALSE)
-    
-    output$donor_interest_code <- renderText({
-      donor_info() %>% 
-        pull(level_1_short) %>%
-        unique()
-    })
-    
-    output$donor_wikipedia <- renderUI({
-      wikipedia <- donor_info() %>% 
-        pull(wikipedia) %>%
-        unique()
-      
-      if(is.na(wikipedia)) return(NULL)
-      
-      a('Wikipedia', href = wikipedia)
-      
-    })
-    
-    output$donor_powerbase <- renderUI({
-      powerbase <- donor_info() %>% 
-        pull(powerbase) %>%
-        unique()
-      
-      if(is.na(powerbase)) return(NULL)
-      
-      a('Powerbase', href = powerbase)
-      
-    })
-    
-    output$donor_infobox <- renderInfoBox({
+    output$general_election_infobox <- renderInfoBox({
       infoBox(
-        "Value selected", paste0('£', format(sum(donor_info()$dntn_value), nsmall = 2, big.mark = ','))
+        "Value selected", paste0('£', format(sum(ge2019_party()$dntn_value), nsmall = 2, big.mark = ','))
       )
     })
     
-    output$donor_by_year <- renderPlot({
-      donor_info() %>% 
-        group_by(x_donation_year) %>% 
-        summarise(total = sum(dntn_value)) %>% 
-        ggplot(aes(x_donation_year, total)) + 
-        geom_bar(stat = 'identity', fill = 'navyblue') +
-        scale_x_continuous(limits = c(2000, year(today())+1), breaks = 2000:(year(today())+1)) +
-        scale_y_continuous(labels = dollar_format(prefix = '£')) +
-        labs(title = 'Total value of donations by year',
-             x = 'Year',
-             y = 'Total value (£)')
+    output$general_election_total <- renderInfoBox({
+      infoBox(
+        "General Election Total", paste0('£', format(sum(ge2019$dntn_value), nsmall = 2, big.mark = ','))
+      )
     })
 
 }
